@@ -7,6 +7,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+
 const fastify = Fastify({
   logger: false,
 });
@@ -18,23 +19,23 @@ fastify.register(fastifyCors, {
 fastify.register(authRoutes, { prefix: "/api/auth" });
 fastify.register(knifeRoutes, { prefix: "/api/knife" });
 
-// fastify.addHook("preHandler", async (req, rep) => {
-//     if (req.url.includes("/knife")) {
-//   try {
-//     const token = req.headers.authorization.split(" ")[1];
-//     if (!token) {
-//       rep.status(401).send("Unauthorized: Missing token");
-//       return;
-//     }
+fastify.addHook("preHandler", async (req, rep) => {
+  if (req.url.includes("/knife")) {
+    try {
+      const token = req.headers.authorization.split(" ")[1];
+      if (!token) {
+        rep.status(401).send("Unauthorized: Missing token");
+        return;
+      }
 
-//     const decodedToken = jwt.verify(token, JWT_SECRET);
-//     req.userId = decodedToken.userId;
-//   } catch (error) {
-//     rep.status(401).send("Unauthorized: Invalid token");
-//     return;
-//   }
-//     }
-// });
+      const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+      req.userId = decodedToken.userId;
+    } catch (error) {
+      rep.status(401).send("Unauthorized: Invalid token");
+      return;
+    }
+  }
+});
 
 // Run the server!
 fastify.listen(
@@ -44,6 +45,6 @@ fastify.listen(
       fastify.log.error(err);
       process.exit(1);
     }
-    fastify.log.info(`server listening on ${address}`);
+    console.log(`server listening on ${address}`);
   }
 );
