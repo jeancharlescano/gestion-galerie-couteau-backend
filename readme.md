@@ -6,7 +6,7 @@ Cette API est construite avec Fastify, un framework web rapide et efficace pour 
 
 Avant de commencer, assurez-vous d'avoir les éléments suivants installés sur votre machine :
 
-- Node.js (version recommandée : 14.x)
+- Node.js (version recommandée : 18.x)
 - npm (le gestionnaire de paquets pour Node.js)
 - PostgreSQL
 
