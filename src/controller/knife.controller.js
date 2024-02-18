@@ -11,7 +11,7 @@ export const createKnife = async (req, rep) => {
     handleLenght,
   } = req.body;
   console.log("🚀 ~ file: knife.controller.js:13 ~ createKnife ~ req.body:", req.body)
-
+  
   try {
     await pool.query(
       `INSERT INTO knife (name, description, img, blade_material, blade_length, handle_material, handle_length) VALUES ($1, $2, $3, $4 ,$5, $6 ,$7)`,

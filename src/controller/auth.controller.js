@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import { pool } from "../config/database.config.js";
 
 const JWT_SECRET = process.env.JWT_SECRET;
+const REFRESH_TOKEN = process.env.REFRESH_TOKEN;
 
 export const register = async (req, rep) => {
   const { username, email, password } = req.body;
@@ -59,12 +60,43 @@ export const login = async (req, rep) => {
       return;
     }
 
-    const token = jwt.sign({ userId: user.id, userEmail: user.email }, JWT_SECRET, {
+    const accessToken = jwt.sign(
+      { userId: user.id, userEmail: user.email },
+      JWT_SECRET,
+      {
+        expiresIn: "6h",
+      }
+    );
+
+    const refreshToken = jwt.sign({ userId: user.id }, REFRESH_TOKEN);
+
+    return { accessToken, refreshToken };
+  } catch (error) {
+    console.log("Error:", error);
+    rep.status(500).send("Internal Server Error");
+  }
+};
+
+export const refresh = async (req, rep) => {
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) {
+    rep.status(400).send("Bad Request: Missing refresh token");
+    return;
+  }
+
+  try {
+    const decodedToken = jwt.verify(refreshToken, REFRESH_TOKEN);
+
+    // Vous pouvez également vérifier la validité du refresh token ici
+
+    // Générer un nouveau jeton d'accès
+    const accessToken = jwt.sign({ userId: decodedToken.userId }, JWT_SECRET, {
       expiresIn: "6h",
     });
 
-    return { token };
+    rep.send({ accessToken });
   } catch (error) {
-    console.log("Error:", error);
+    rep.status(401).send("Unauthorized: Invalid refresh token");
   }
 };
