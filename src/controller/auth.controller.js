@@ -64,11 +64,11 @@ export const login = async (req, rep) => {
       { userId: user.id, userEmail: user.email },
       JWT_SECRET,
       {
-        expiresIn: "6h",
+        expiresIn: "1h",
       }
     );
 
-    const refreshToken = jwt.sign({ userId: user.id }, REFRESH_TOKEN);
+    const refreshToken = jwt.sign({ userId: user.id, userEmail: user.email }, REFRESH_TOKEN, {expiresIn: "90 days"});
 
     return { accessToken, refreshToken };
   } catch (error) {
@@ -79,6 +79,7 @@ export const login = async (req, rep) => {
 
 export const refresh = async (req, rep) => {
   const { refreshToken } = req.body;
+  console.log("🚀 ~ refresh ~ refreshToken:", refreshToken)
 
   if (!refreshToken) {
     rep.status(400).send("Bad Request: Missing refresh token");
@@ -91,7 +92,7 @@ export const refresh = async (req, rep) => {
     // Vous pouvez également vérifier la validité du refresh token ici
 
     // Générer un nouveau jeton d'accès
-    const accessToken = jwt.sign({ userId: decodedToken.userId }, JWT_SECRET, {
+    const accessToken = jwt.sign({ userId: decodedToken.userId, userEmail: decodedToken.userEmail }, JWT_SECRET, {
       expiresIn: "6h",
     });
 

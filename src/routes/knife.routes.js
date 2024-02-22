@@ -7,7 +7,7 @@ import {
 } from "../controller/knife.controller.js";
 
 export default async function routes(fastify) {
-    fastify.post("/", createKnife),
+    fastify.post("/add", createKnife),
     fastify.get("/", getAllKnifes),
     fastify.get("/:id", getKnifeById),
     fastify.put("/update/:id", updateKnifeById),
