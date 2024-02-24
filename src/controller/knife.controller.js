@@ -10,8 +10,11 @@ export const createKnife = async (req, rep) => {
     handleMaterial,
     handleLenght,
   } = req.body;
-  console.log("🚀 ~ file: knife.controller.js:13 ~ createKnife ~ req.body:", req.body)
-  
+  console.log(
+    "🚀 ~ file: knife.controller.js:13 ~ createKnife ~ req.body:",
+    req.body
+  );
+
   try {
     await pool.query(
       `INSERT INTO knife (name, description, img, blade_material, blade_length, handle_material, handle_length) VALUES ($1, $2, $3, $4 ,$5, $6 ,$7)`,
@@ -28,7 +31,7 @@ export const createKnife = async (req, rep) => {
     return "Done";
   } catch (error) {
     console.log("🚀 ~ file: post.controller.js:7 ~ createPost ~ error:", error);
-    rep.sendStatus(500)
+    rep.sendStatus(500);
   }
 };
 
@@ -89,6 +92,7 @@ export const updateKnifeById = async (req, rep) => {
 };
 
 export const deleteKnifeById = async (req, rep) => {
+  console.log("🚀 ~ deleteKnifeById ~ req:", req.params);
   try {
     pool.query(`DELETE FROM knife WHERE id = $1;`, [req.params.id]);
     return "Done";
