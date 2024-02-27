@@ -6,7 +6,8 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const REFRESH_TOKEN = process.env.REFRESH_TOKEN;
 
 export const register = async (req, rep) => {
-  const { firstname, lastname, username, email, password, isAdmin } = req.body;
+  const { firstname, lastname, email, password } = req.body;
+  console.log("🚀 ~ register ~ req.body:", req.body);
 
   try {
     const emailExists = await pool.query(
@@ -21,7 +22,7 @@ export const register = async (req, rep) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     await pool.query(
       `INSERT INTO users (firstname, lastname, email, password, isAdmin) VALUES ($1, $2, $3, $4, $5)`,
-      [firstname, lastname, username, email, hashedPassword, isAdmin]
+      [firstname, lastname, email, hashedPassword, false]
     );
 
     rep.status(200).send("Done");
