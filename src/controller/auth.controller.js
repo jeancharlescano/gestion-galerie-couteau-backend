@@ -6,21 +6,13 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const REFRESH_TOKEN = process.env.REFRESH_TOKEN;
 
 export const register = async (req, rep) => {
-  const { username, email, password } = req.body;
+  const { firstname, lastname, username, email, password, isAdmin } = req.body;
 
   try {
-    const usernameExists = await pool.query(
-      `SELECT id FROM users WHERE username = $1`,
-      [username]
-    );
     const emailExists = await pool.query(
       `SELECT id FROM users WHERE email = $1`,
       [email]
     );
-
-    if (usernameExists.rows.length > 0) {
-      return rep.status(400).send("Username already exists");
-    }
 
     if (emailExists.rows.length > 0) {
       return rep.status(400).send("Email already exists");
@@ -28,11 +20,11 @@ export const register = async (req, rep) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     await pool.query(
-      `INSERT INTO users (username, email, password) VALUES ($1, $2, $3)`,
-      [username, email, hashedPassword]
+      `INSERT INTO users (firstname, lastname, email, password, isAdmin) VALUES ($1, $2, $3, $4, $5)`,
+      [firstname, lastname, username, email, hashedPassword, isAdmin]
     );
 
-    return "User registered successfully";
+    rep.status(200).send("Done");
   } catch (error) {
     console.log("Error:", error);
     rep.status(500).send("Internal Server Error");
@@ -68,7 +60,11 @@ export const login = async (req, rep) => {
       }
     );
 
-    const refreshToken = jwt.sign({ userId: user.id, userEmail: user.email }, REFRESH_TOKEN, {expiresIn: "90 days"});
+    const refreshToken = jwt.sign(
+      { userId: user.id, userEmail: user.email },
+      REFRESH_TOKEN,
+      { expiresIn: "90 days" }
+    );
 
     return { accessToken, refreshToken };
   } catch (error) {
@@ -79,7 +75,7 @@ export const login = async (req, rep) => {
 
 export const refresh = async (req, rep) => {
   const { refreshToken } = req.body;
-  console.log("🚀 ~ refresh ~ refreshToken:", refreshToken)
+  console.log("🚀 ~ refresh ~ refreshToken:", refreshToken);
 
   if (!refreshToken) {
     rep.status(400).send("Bad Request: Missing refresh token");
@@ -92,11 +88,15 @@ export const refresh = async (req, rep) => {
     // Vous pouvez également vérifier la validité du refresh token ici
 
     // Générer un nouveau jeton d'accès
-    const accessToken = jwt.sign({ userId: decodedToken.userId, userEmail: decodedToken.userEmail }, JWT_SECRET, {
-      expiresIn: "6h",
-    });
+    const accessToken = jwt.sign(
+      { userId: decodedToken.userId, userEmail: decodedToken.userEmail },
+      JWT_SECRET,
+      {
+        expiresIn: "90 days",
+      }
+    );
 
-    rep.send({ accessToken });
+    rep.status(200).send({ accessToken });
   } catch (error) {
     rep.status(401).send("Unauthorized: Invalid refresh token");
   }
