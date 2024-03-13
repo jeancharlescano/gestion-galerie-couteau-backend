@@ -1,0 +1,27 @@
+{
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "database": "knife",
+            "username": "postgres",
+            "name": "knife-web-site"
+        },
+        {
+            "namespace": "DIRECTION_RH",
+            "connectionMethod": "Server and Port",
+            "showSystem": false,
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 52773,
+            "https": false,
+            "askForPassword": false,
+            "driver": "InterSystems IRIS",
+            "name": "iris-test",
+            "username": "system",
+            "password": "_SYS"
+        }
+    ]
+}

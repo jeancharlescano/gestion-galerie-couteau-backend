@@ -53,6 +53,7 @@ export const login = async (req, rep) => {
     }
 
     const user = result.rows[0];
+    console.log("🚀 ~ login ~ user:", user)
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
@@ -61,14 +62,16 @@ export const login = async (req, rep) => {
     }
 
     const accessToken = jwt.sign(
-      { userId: user.id, userEmail: user.email },
+      { userId: user.id, userEmail: user.email, isAdmin: user.isadmin },
       JWT_SECRET,
-      {
-        expiresIn: "1h",
-      }
+      { expiresIn: "1h" }
     );
 
-    const refreshToken = jwt.sign({ userId: user.id, userEmail: user.email }, REFRESH_TOKEN, {expiresIn: "90 days"});
+    const refreshToken = jwt.sign(
+      { userId: user.id, userEmail: user.email, isAdmin: user.isadmin },
+      REFRESH_TOKEN,
+      { expiresIn: "90 days" }
+    );
 
     return { accessToken, refreshToken };
   } catch (error) {
@@ -79,7 +82,7 @@ export const login = async (req, rep) => {
 
 export const refresh = async (req, rep) => {
   const { refreshToken } = req.body;
-  console.log("🚀 ~ refresh ~ refreshToken:", refreshToken)
+  console.log("🚀 ~ refresh ~ refreshToken:", refreshToken);
 
   if (!refreshToken) {
     rep.status(400).send("Bad Request: Missing refresh token");
@@ -92,9 +95,15 @@ export const refresh = async (req, rep) => {
     // Vous pouvez également vérifier la validité du refresh token ici
 
     // Générer un nouveau jeton d'accès
-    const accessToken = jwt.sign({ userId: decodedToken.userId, userEmail: decodedToken.userEmail }, JWT_SECRET, {
-      expiresIn: "6h",
-    });
+    const accessToken = jwt.sign(
+      {
+        userId: decodedToken.userId,
+        userEmail: decodedToken.userEmail,
+        isAdmin: decodedToken.isAdmin,
+      },
+      JWT_SECRET,
+      { expiresIn: "6h" }
+    );
 
     rep.send({ accessToken });
   } catch (error) {
