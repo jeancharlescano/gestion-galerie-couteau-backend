@@ -6,21 +6,14 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const REFRESH_TOKEN = process.env.REFRESH_TOKEN;
 
 export const register = async (req, rep) => {
-  const { username, email, password } = req.body;
+  const { firstname, lastname, email, password } = req.body;
+  console.log("🚀 ~ register ~ req.body:", req.body);
 
   try {
-    const usernameExists = await pool.query(
-      `SELECT id FROM users WHERE username = $1`,
-      [username]
-    );
     const emailExists = await pool.query(
       `SELECT id FROM users WHERE email = $1`,
       [email]
     );
-
-    if (usernameExists.rows.length > 0) {
-      return rep.status(400).send("Username already exists");
-    }
 
     if (emailExists.rows.length > 0) {
       return rep.status(400).send("Email already exists");
@@ -28,11 +21,11 @@ export const register = async (req, rep) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     await pool.query(
-      `INSERT INTO users (username, email, password) VALUES ($1, $2, $3)`,
-      [username, email, hashedPassword]
+      `INSERT INTO users (firstname, lastname, email, password, isAdmin) VALUES ($1, $2, $3, $4, $5)`,
+      [firstname, lastname, email, hashedPassword, false]
     );
 
-    return "User registered successfully";
+    rep.status(200).send("Done");
   } catch (error) {
     console.log("Error:", error);
     rep.status(500).send("Internal Server Error");
@@ -64,7 +57,7 @@ export const login = async (req, rep) => {
     const accessToken = jwt.sign(
       { userId: user.id, userEmail: user.email, isAdmin: user.isadmin },
       JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "6h" }
     );
 
     const refreshToken = jwt.sign(
@@ -82,6 +75,7 @@ export const login = async (req, rep) => {
 
 export const refresh = async (req, rep) => {
   const { refreshToken } = req.body;
+  console.log("🚀 ~ refresh ~ refreshToken:", refreshToken);
   console.log("🚀 ~ refresh ~ refreshToken:", refreshToken);
 
   if (!refreshToken) {
@@ -105,7 +99,7 @@ export const refresh = async (req, rep) => {
       { expiresIn: "6h" }
     );
 
-    rep.send({ accessToken });
+    rep.status(200).send({ accessToken });
   } catch (error) {
     rep.status(401).send("Unauthorized: Invalid refresh token");
   }
