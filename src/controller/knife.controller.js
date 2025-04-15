@@ -10,10 +10,6 @@ export const createKnife = async (req, rep) => {
     handleMaterial,
     handleLenght,
   } = req.body;
-  console.log(
-    "🚀 ~ file: knife.controller.js:13 ~ createKnife ~ req.body:",
-    req.body
-  );
 
   try {
     await pool.query(
@@ -28,19 +24,20 @@ export const createKnife = async (req, rep) => {
         handleLenght,
       ]
     );
-    return "Done";
+    return rep.sendStatus(200);
   } catch (error) {
     console.log("🚀 ~ file: post.controller.js:7 ~ createPost ~ error:", error);
-    rep.sendStatus(500);
+    rep.status(500).send("Internal Server Error");
   }
 };
 
-export const getAllKnifes = async (req, rep) => {
+export const getAllKnifes = async (_req, rep) => {
   try {
     let result = await pool.query("SELECT * FROM knife");
     return result.rows;
   } catch (err) {
     console.log(err);
+    rep.status(500).send("Internal Server Error");
   }
 };
 
@@ -54,7 +51,8 @@ export const getKnifeById = async (req, rep) => {
     );
     return result.rows;
   } catch (err) {
-    console.log(err);
+    console.log("🚀 ~ getKnifeById ~ err:", err);
+    rep.status(500).send("Internal Server Error");
   }
 };
 
@@ -98,5 +96,6 @@ export const deleteKnifeById = async (req, rep) => {
     return "Done";
   } catch (err) {
     console.log(err);
+    rep.status(500).send("Internal Server Error");
   }
 };
