@@ -95,7 +95,7 @@ export const getKnifeById = async (req, res) => {
         WHERE id = $1`,
       [req.params.id]
     );
-    res.send(result.rows);
+    res.send(result.rows[0]);
   } catch (err) {
     console.log("🚀 ~ getKnifeById ~ err:", err);
     res.status(500).send("Internal Server Error");
@@ -106,22 +106,39 @@ export const updateKnifeById = async (req, res) => {
   const {
     name,
     description,
-    img,
     bladeMaterial,
     bladeLenght,
     handleMaterial,
     handleLenght,
   } = req.body;
+  let imgUrl = null;
+  if (req.file) {
+    const { filename, path: tempPath } = req.file;
+
+    try {
+      imgUrl = "url New img";
+      imgUrl = await uploadToCDN(tempPath, filename);
+
+      fs.unlinkSync(tempPath);
+    } catch (err) {
+      console.error("Erreur d'upload vers le CDN :", err);
+      return res.status(500).send("Erreur lors du transfert du fichier.");
+    }
+  } else {
+    imgUrl = await pool.query(`SELECT img FROM knife WHERE id = $1`, [
+      req.params.id,
+    ]);
+  }
 
   try {
     await pool.query(
-      `UPDATE knife 
-        SET name = $1, description = $2, img = $3, blade_material = $4, blade_length = $5, handle_material =$6 , handle_length = $7 
+      `UPDATE knife
+        SET name = $1, description = $2, img = $3, blade_material = $4, blade_length = $5, handle_material =$6 , handle_length = $7
         WHERE id = $8;`,
       [
         name,
         description,
-        img,
+        imgUrl,
         bladeMaterial,
         bladeLenght,
         handleMaterial,
@@ -129,9 +146,10 @@ export const updateKnifeById = async (req, res) => {
         req.params.id,
       ]
     );
-    res.status(200);
+    res.sendStatus(200);
   } catch (err) {
-    console.log(err);
+    console.error("🚀 ~ updateKnifeById ~ err:", err);
+    res.status(500).send("Internal Server Error");
   }
 };
 
@@ -141,7 +159,7 @@ export const deleteKnifeById = async (req, res) => {
     await pool.query(`DELETE FROM knife WHERE id = $1;`, [req.params.id]);
     res.sendStatus(200);
   } catch (err) {
-    console.log(err);
+    console.error("🚀 ~ deleteKnifeById ~ err:", err);
     res.status(500).send({ message: "Internal Server Error" });
   }
 };
