@@ -1,3 +1,6 @@
+import { Router } from "express";
+import multer from "multer";
+import { verifyToken } from "../middlewares/auth.middleware.js";
 import {
   createKnife,
   deleteKnifeById,
@@ -6,10 +9,13 @@ import {
   updateKnifeById,
 } from "../controller/knife.controller.js";
 
-export default async function routes(fastify) {
-    fastify.post("/add", createKnife),
-    fastify.get("/", getAllKnifes),
-    fastify.get("/:id", getKnifeById),
-    fastify.put("/update/:id", updateKnifeById),
-    fastify.delete("/delete/:id", deleteKnifeById);
-}
+const router = Router();
+const upload = multer({ dest: "uploads/" });
+
+router.post("/add", verifyToken, upload.single("knifePic"), createKnife);
+router.get("/", getAllKnifes);
+router.get("/:id", getKnifeById);
+router.put("/update/:id", verifyToken, updateKnifeById);
+router.delete("/delete/:id", verifyToken, deleteKnifeById);
+
+export default router;

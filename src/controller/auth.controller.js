@@ -5,7 +5,7 @@ import { pool } from "../config/database.config.js";
 const JWT_SECRET = process.env.JWT_SECRET;
 const REFRESH_TOKEN = process.env.REFRESH_TOKEN;
 
-export const register = async (req, rep) => {
+export const register = async (req, res) => {
   const { firstname, lastname, email, password } = req.body;
   console.log("🚀 ~ register ~ req.body:", req.body);
 
@@ -16,7 +16,7 @@ export const register = async (req, rep) => {
     );
 
     if (emailExists.rows.length > 0) {
-      return rep.status(400).send("Email already exists");
+      return res.status(400).send("Email already exists");
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -25,14 +25,14 @@ export const register = async (req, rep) => {
       [firstname, lastname, email, hashedPassword, false]
     );
 
-    rep.status(200).send("Done");
+    res.status(200).send("Done");
   } catch (error) {
     console.log("Error:", error);
-    rep.status(500).send("Internal Server Error");
+    res.status(500).send("Internal Server Error");
   }
 };
 
-export const login = async (req, rep) => {
+export const login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
@@ -41,16 +41,15 @@ export const login = async (req, rep) => {
     ]);
 
     if (result.rows.length === 0) {
-      rep.status(401).send("Invalid email or password");
+      res.status(401).send("Invalid email or password");
       return;
     }
 
     const user = result.rows[0];
-    console.log("🚀 ~ login ~ user:", user)
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-      rep.status(401).send("Invalid email or password");
+      res.status(401).send("Invalid email or password");
       return;
     }
 
@@ -59,27 +58,30 @@ export const login = async (req, rep) => {
       JWT_SECRET,
       { expiresIn: "6h" }
     );
+    console.log("🚀 ~ login ~ JWT_SECRET:", JWT_SECRET);
+    console.log("🚀 ~ login ~ accessToken:", accessToken);
 
     const refreshToken = jwt.sign(
       { userId: user.id, userEmail: user.email, isAdmin: user.isadmin },
       REFRESH_TOKEN,
       { expiresIn: "90 days" }
     );
+    console.log("🚀 ~ login ~ refreshToken:", refreshToken);
 
-    return { accessToken, refreshToken };
+    res.status(200).send({ accessToken, refreshToken });
   } catch (error) {
     console.log("Error:", error);
-    rep.status(500).send("Internal Server Error");
+    res.status(500).send("Internal Server Error");
   }
 };
 
-export const refresh = async (req, rep) => {
+export const refresh = async (req, res) => {
   const { refreshToken } = req.body;
   console.log("🚀 ~ refresh ~ refreshToken:", refreshToken);
   console.log("🚀 ~ refresh ~ refreshToken:", refreshToken);
 
   if (!refreshToken) {
-    rep.status(400).send("Bad Request: Missing refresh token");
+    res.status(400).send("Bad Request: Missing refresh token");
     return;
   }
 
@@ -99,8 +101,8 @@ export const refresh = async (req, rep) => {
       { expiresIn: "6h" }
     );
 
-    rep.status(200).send({ accessToken });
+    res.status(200).send({ accessToken });
   } catch (error) {
-    rep.status(401).send("Unauthorized: Invalid refresh token");
+    res.status(401).send("Unauthorized: Invalid refresh token");
   }
 };
