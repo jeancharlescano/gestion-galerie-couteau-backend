@@ -7,7 +7,6 @@ const REFRESH_TOKEN = process.env.REFRESH_TOKEN;
 
 export const register = async (req, res) => {
   const { firstname, lastname, email, password } = req.body;
-  console.log("🚀 ~ register ~ req.body:", req.body);
 
   try {
     const emailExists = await pool.query(
@@ -58,15 +57,12 @@ export const login = async (req, res) => {
       JWT_SECRET,
       { expiresIn: "6h" }
     );
-    console.log("🚀 ~ login ~ JWT_SECRET:", JWT_SECRET);
-    console.log("🚀 ~ login ~ accessToken:", accessToken);
 
     const refreshToken = jwt.sign(
       { userId: user.id, userEmail: user.email, isAdmin: user.isadmin },
       REFRESH_TOKEN,
       { expiresIn: "90 days" }
     );
-    console.log("🚀 ~ login ~ refreshToken:", refreshToken);
 
     res.status(200).send({ accessToken, refreshToken });
   } catch (error) {
@@ -77,8 +73,6 @@ export const login = async (req, res) => {
 
 export const refresh = async (req, res) => {
   const { refreshToken } = req.body;
-  console.log("🚀 ~ refresh ~ refreshToken:", refreshToken);
-  console.log("🚀 ~ refresh ~ refreshToken:", refreshToken);
 
   if (!refreshToken) {
     res.status(400).send("Bad Request: Missing refresh token");
@@ -87,8 +81,6 @@ export const refresh = async (req, res) => {
 
   try {
     const decodedToken = jwt.verify(refreshToken, REFRESH_TOKEN);
-
-    // Vous pouvez également vérifier la validité du refresh token ici
 
     // Générer un nouveau jeton d'accès
     const accessToken = jwt.sign(
