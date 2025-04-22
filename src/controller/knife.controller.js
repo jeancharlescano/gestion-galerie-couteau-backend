@@ -28,7 +28,7 @@ const uploadToCDN = (filePath, filename) => {
         host: "192.168.1.50",
         port: 22,
         username: "root",
-        privateKey: fs.readFileSync("C:/Users/Jean-Charles/.ssh/id_rsa"),
+        privateKey: fs.readFileSync(process.env.SSH_KEY_PATH),
       });
   });
 };
