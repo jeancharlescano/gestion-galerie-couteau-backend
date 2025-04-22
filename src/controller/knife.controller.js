@@ -18,7 +18,7 @@ const uploadToCDN = (filePath, filename) => {
               reject("Erreur de transfert SFTP : " + err);
             } else {
               console.log(`Fichier transféré avec succès vers ${remotePath}`);
-              resolve(`http://192.168.1.50/images/${filename}`);
+              resolve(`https://cdn.lamedetony.fr/images/${filename}`);
             }
             conn.end();
           });
