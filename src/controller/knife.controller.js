@@ -3,7 +3,6 @@ import { Client } from "ssh2";
 import fs from "fs";
 
 const uploadToCDN = (filePath, filename) => {
-  console.log("🚀 ~ uploadToCDN ~ filePath:", filePath);
   return new Promise((resolve, reject) => {
     const conn = new Client();
     conn
@@ -14,7 +13,6 @@ const uploadToCDN = (filePath, filename) => {
 
           const remotePath = `/var/www/cdn/images/${filename}`;
 
-          console.log("🚀 ~ conn.sftp ~ remotePath:", remotePath);
           sftp.fastPut(filePath, remotePath, {}, (err) => {
             if (err) {
               reject("Erreur de transfert SFTP : " + err);
@@ -46,15 +44,12 @@ export const createKnife = async (req, res) => {
   } = req.body;
   let imgUrl = null;
 
-  console.log("🚀 ~ createKnife ~ req.file:", req.file);
   if (req.file) {
-    console.log("🚀 ~ createKnife ~ tempPath:", tempPath);
     const { filename, path: tempPath } = req.file;
-    console.log("🚀 ~ createKnife ~ filename:", filename);
+    console.log("🚀 ~ createKnife ~ tempPath:", tempPath);
 
     try {
       imgUrl = await uploadToCDN(tempPath, filename);
-      console.log("🚀 ~ createKnife ~ imgUrl:", imgUrl);
 
       fs.unlinkSync(tempPath);
     } catch (err) {
