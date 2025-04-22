@@ -44,11 +44,14 @@ export const createKnife = async (req, res) => {
   } = req.body;
   let imgUrl = null;
 
+  console.log("🚀 ~ createKnife ~ req.file:", req.file);
   if (req.file) {
     const { filename, path: tempPath } = req.file;
+    console.log("🚀 ~ createKnife ~ filename:", filename);
 
     try {
       imgUrl = await uploadToCDN(tempPath, filename);
+      console.log("🚀 ~ createKnife ~ imgUrl:", imgUrl);
 
       fs.unlinkSync(tempPath);
     } catch (err) {
